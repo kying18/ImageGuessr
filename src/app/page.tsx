@@ -1,40 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { z } from "zod";
-import { typedFetch } from "@/lib/typedFetch";
-
-const FileSchema = z.object({
-  id: z.string(),
-  url: z.string(),
-  source_type: z.enum(["real", "generated"]),
-  source_id: z.string().nullable(),
-  prompt: z.string().nullable(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
+import { useFile } from "@/lib/hooks/useFile";
 
 export default function Home() {
-  const [file, setFile] = useState<z.infer<typeof FileSchema> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchFile() {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await typedFetch("/api/file", FileSchema);
-        setFile(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch file");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchFile();
-  }, []);
+  const {
+    data: file,
+    isLoading,
+    error,
+  } = useFile("9446d851-0cd4-4da0-841e-fcad71c302dd");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -70,30 +44,23 @@ export default function Home() {
           </p>
         </div>
         <div className="flex w-full flex-col gap-6">
-          {loading && (
+          {isLoading && (
             <div className="text-center text-zinc-600 dark:text-zinc-400">
               Loading...
             </div>
           )}
           {error && (
             <div className="rounded-lg bg-red-50 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-400">
-              Error: {error}
+              Error:{" "}
+              {error instanceof Error ? error.message : "Failed to fetch file"}
             </div>
           )}
-          {file && !loading && (
+          {file && !isLoading && (
             <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900">
               <h2 className="mb-4 text-xl font-semibold text-black dark:text-zinc-50">
                 File Data
               </h2>
               <div className="space-y-2 text-sm">
-                <div>
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                    ID:
-                  </span>{" "}
-                  <span className="text-zinc-600 dark:text-zinc-400">
-                    {file.id}
-                  </span>
-                </div>
                 <div>
                   <span className="font-medium text-zinc-700 dark:text-zinc-300">
                     URL:
@@ -108,42 +75,6 @@ export default function Home() {
                   </span>{" "}
                   <span className="text-zinc-600 dark:text-zinc-400">
                     {file.source_type}
-                  </span>
-                </div>
-                {file.source_id && (
-                  <div>
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                      Source ID:
-                    </span>{" "}
-                    <span className="text-zinc-600 dark:text-zinc-400">
-                      {file.source_id}
-                    </span>
-                  </div>
-                )}
-                {file.prompt && (
-                  <div>
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                      Prompt:
-                    </span>{" "}
-                    <span className="text-zinc-600 dark:text-zinc-400">
-                      {file.prompt}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                    Created At:
-                  </span>{" "}
-                  <span className="text-zinc-600 dark:text-zinc-400">
-                    {new Date(file.created_at).toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                    Updated At:
-                  </span>{" "}
-                  <span className="text-zinc-600 dark:text-zinc-400">
-                    {new Date(file.updated_at).toLocaleString()}
                   </span>
                 </div>
               </div>
