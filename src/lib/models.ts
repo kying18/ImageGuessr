@@ -17,6 +17,7 @@ export interface File {
 
 export interface Game {
   id: string;
+  date: string;
   created_at: string;
   updated_at: string;
 }
@@ -38,4 +39,13 @@ export interface GameResult {
   game_id: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface FilePairWithFiles extends FilePair {
+  real_file: File;
+  generated_file: File;
+}
+
+export interface GameWithDetails extends Game {
+  file_pairs: FilePairWithFiles[];
 }

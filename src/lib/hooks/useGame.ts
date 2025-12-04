@@ -1,14 +1,16 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { typedFetch } from "../typedFetch";
-import { IGame, IGameSchema } from "../types";
+import { IGameWithDetails, IGameWithDetailsSchema } from "../types";
 
 export function useGame(
-  id: string,
-  options?: Omit<UseQueryOptions<IGame>, "queryKey" | "queryFn">
+  options?: Omit<UseQueryOptions<IGameWithDetails>, "queryKey" | "queryFn">
 ) {
+  // Get current date in UTC for cache key
+  const today = new Date().toISOString().split("T")[0];
+
   return useQuery({
-    queryKey: ["game", id],
-    queryFn: () => typedFetch(`/api/game?id=${id}`, IGameSchema),
+    queryKey: ["game", today],
+    queryFn: () => typedFetch("/api/game", IGameWithDetailsSchema),
     ...options,
   });
 }
