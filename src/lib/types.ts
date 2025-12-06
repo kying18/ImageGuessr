@@ -32,7 +32,8 @@ export type IFilePair = z.infer<typeof IFilePairSchema>;
 
 // GameResult
 export const IGameResultSchema = z.object({
-  score: z.number(),
+  points_scored: z.number(),
+  accuracy: z.number(),
   game_id: z.string(),
 });
 export type IGameResult = z.infer<typeof IGameResultSchema>;
@@ -54,5 +55,6 @@ export const IGameWithDetailsSchema = z.object({
   id: z.string(),
   date: z.string(),
   file_pairs: z.array(IFilePairWithFilesSchema),
+  game_results: z.array(IGameResultSchema),
 });
 export type IGameWithDetails = z.infer<typeof IGameWithDetailsSchema>;

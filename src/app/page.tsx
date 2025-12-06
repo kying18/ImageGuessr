@@ -301,9 +301,47 @@ export default function Home() {
   }
 
   // Final Results
-  if (gameState === "final") {
+  if (gameState === "final" && game) {
     const correctCount = roundResults.filter((r) => r.correct).length;
     const accuracy = (correctCount / roundResults.length) * 100;
+
+    // Calculate percentile based on game results
+    const allScores = game.game_results.map((r) => r.points_scored);
+    const scoresBelowUser = allScores.filter((s) => s < score).length;
+    const percentile =
+      allScores.length > 0
+        ? Math.round((scoresBelowUser / allScores.length) * 100)
+        : 50;
+
+    // Create histogram bins
+    const maxScore = Math.max(...allScores, score);
+    const minScore = Math.min(...allScores, score);
+    const binCount = 10;
+    const binSize = Math.ceil((maxScore - minScore) / binCount);
+    const bins = Array(binCount).fill(0);
+    const binRanges = Array(binCount)
+      .fill(0)
+      .map((_, i) => ({
+        min: minScore + i * binSize,
+        max: minScore + (i + 1) * binSize,
+      }));
+
+    // Fill bins
+    allScores.forEach((s) => {
+      const binIndex = Math.min(
+        Math.floor((s - minScore) / binSize),
+        binCount - 1
+      );
+      bins[binIndex]++;
+    });
+
+    // Find which bin the user's score falls into
+    const userBinIndex = Math.min(
+      Math.floor((score - minScore) / binSize),
+      binCount - 1
+    );
+
+    const maxBinCount = Math.max(...bins);
 
     return (
       <div className="min-h-screen bg-zinc-50 py-12 dark:bg-zinc-950">
@@ -324,6 +362,65 @@ export default function Home() {
                 {accuracy.toFixed(0)}%)
               </p>
             </div>
+
+            {/* Comparison with Other Players */}
+            {game.game_results.length > 0 && (
+              <div className="mt-8 rounded-lg bg-white p-6 shadow-sm dark:bg-zinc-900">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+                  How You Compare
+                </h2>
+                <p className="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  Top {100 - percentile}%
+                </p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  Better than {percentile}% of {allScores.length} players
+                </p>
+
+                {/* Histogram */}
+                <div className="mt-6">
+                  <p className="mb-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Score Distribution
+                  </p>
+                  <div className="flex items-end justify-between gap-1 h-32">
+                    {bins.map((count, index) => {
+                      const height =
+                        maxBinCount > 0 ? (count / maxBinCount) * 100 : 0;
+                      const isUserBin = index === userBinIndex;
+                      return (
+                        <div
+                          key={index}
+                          className="flex flex-1 flex-col items-center"
+                        >
+                          <div className="relative w-full">
+                            <div
+                              className={`w-full rounded-t transition-all ${
+                                isUserBin
+                                  ? "bg-blue-600 dark:bg-blue-500"
+                                  : "bg-zinc-300 dark:bg-zinc-700"
+                              }`}
+                              style={{
+                                height: `${height}%`,
+                                minHeight: count > 0 ? "4px" : "0px",
+                              }}
+                            >
+                              {isUserBin && (
+                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-bold text-blue-600 dark:text-blue-400">
+                                  You
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-2 flex justify-between text-xs text-zinc-500 dark:text-zinc-500">
+                    <span>{minScore}</span>
+                    <span>{maxScore}</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Round Summary */}
             <div className="mt-8 space-y-3">

@@ -35,7 +35,8 @@ export interface FilePair {
 
 export interface GameResult {
   id: string;
-  score: number;
+  points_scored: number;
+  accuracy: number;
   game_id: string;
   created_at: string;
   updated_at: string;
@@ -48,4 +49,5 @@ export interface FilePairWithFiles extends FilePair {
 
 export interface GameWithDetails extends Game {
   file_pairs: FilePairWithFiles[];
+  game_results: GameResult[];
 }

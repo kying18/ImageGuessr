@@ -49,7 +49,8 @@ export function transformFilePair(filePair: FilePairModel): IFilePair {
 
 export function transformGameResult(gameResult: GameResultModel): IGameResult {
   return {
-    score: gameResult.score,
+    points_scored: gameResult.points_scored,
+    accuracy: gameResult.accuracy,
     game_id: gameResult.game_id,
   };
 }
@@ -75,5 +76,6 @@ export function transformGameWithDetails(
     id: game.id,
     date: game.date,
     file_pairs: game.file_pairs.map(transformFilePairWithFiles),
+    game_results: game.game_results.map(transformGameResult),
   };
 }
