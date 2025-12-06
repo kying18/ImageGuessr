@@ -36,6 +36,7 @@ export default function Home() {
   }, [game]);
 
   const currentPair = randomizedPairs[currentRound];
+  const nextPair = randomizedPairs[currentRound + 1];
 
   const startGame = () => {
     setGameState("playing");
@@ -219,6 +220,7 @@ export default function Home() {
                   alt="Image A"
                   fill
                   className="object-cover"
+                  priority={currentRound === 0}
                 />
               </div>
               {!hasVoted ? (
@@ -258,6 +260,7 @@ export default function Home() {
                   alt="Image B"
                   fill
                   className="object-cover"
+                  priority={currentRound === 0}
                 />
               </div>
               {!hasVoted ? (
@@ -293,6 +296,26 @@ export default function Home() {
                   ? "Next Round"
                   : "See Results"}
               </button>
+            </div>
+          )}
+
+          {/* Preload next round's images */}
+          {nextPair && (
+            <div className="hidden">
+              <Image
+                src={nextPair.leftImage.url}
+                alt="Preload"
+                width={500}
+                height={500}
+                priority
+              />
+              <Image
+                src={nextPair.rightImage.url}
+                alt="Preload"
+                width={500}
+                height={500}
+                priority
+              />
             </div>
           )}
         </div>
