@@ -39,6 +39,7 @@ export function transformGame(game: GameModel): IGame {
 
 export function transformFilePair(filePair: FilePairModel): IFilePair {
   return {
+    id: filePair.id,
     real_file_id: filePair.real_file_id,
     generated_file_id: filePair.generated_file_id,
     real_vote_count: filePair.real_vote_count,
@@ -59,6 +60,7 @@ export function transformFilePairWithFiles(
   filePair: FilePairWithFilesModel
 ): IFilePairWithFiles {
   return {
+    id: filePair.id,
     real_file_id: filePair.real_file_id,
     generated_file_id: filePair.generated_file_id,
     real_vote_count: filePair.real_vote_count,

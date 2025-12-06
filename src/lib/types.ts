@@ -22,6 +22,7 @@ export type IGame = z.infer<typeof IGameSchema>;
 
 // FilePair
 export const IFilePairSchema = z.object({
+  id: z.string(),
   real_file_id: z.string(),
   generated_file_id: z.string(),
   real_vote_count: z.number(),
@@ -40,6 +41,7 @@ export type IGameResult = z.infer<typeof IGameResultSchema>;
 
 // FilePair with Files (depends on IFileSchema)
 export const IFilePairWithFilesSchema = z.object({
+  id: z.string(),
   real_file_id: z.string(),
   generated_file_id: z.string(),
   real_vote_count: z.number(),

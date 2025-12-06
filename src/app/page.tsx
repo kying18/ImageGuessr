@@ -10,6 +10,8 @@ type GameState = "landing" | "playing" | "results" | "final";
 interface RoundResult {
   correct: boolean;
   points: number;
+  file_pair_id: string;
+  voted_for_real: boolean;
 }
 
 export default function Home() {
@@ -47,7 +49,7 @@ export default function Home() {
   };
 
   const handleVote = (votedForLeft: boolean) => {
-    if (!currentPair || hasVoted) return;
+    if (!currentPair || hasVoted || !game) return;
 
     const votedForReal =
       (votedForLeft && currentPair.isRealLeft) ||
@@ -65,16 +67,62 @@ export default function Home() {
     const points = votedForReal ? Math.round(100 + difficulty * 200) : 0;
 
     setScore((prev) => prev + points);
-    setRoundResults((prev) => [...prev, { correct: votedForReal, points }]);
+    setRoundResults((prev) => [
+      ...prev,
+      {
+        correct: votedForReal,
+        points,
+        file_pair_id: game.file_pairs[currentRound].id,
+        voted_for_real: votedForReal,
+      },
+    ]);
     setGameState("results");
   };
 
-  const nextRound = () => {
+  const submitGameResults = async () => {
+    if (!game) return;
+
+    try {
+      // Calculate accuracy (number of correct answers)
+      const correctCount = roundResults.filter((r) => r.correct).length;
+
+      // Submit game result
+      await fetch("/api/game-result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          points_scored: score,
+          accuracy: correctCount,
+          game_id: game.id,
+        }),
+      });
+
+      // Update vote counts for each file pair
+      await Promise.all(
+        roundResults.map((result) =>
+          fetch("/api/file-pair", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              file_pair_id: result.file_pair_id,
+              voted_for_real: result.voted_for_real,
+            }),
+          })
+        )
+      );
+    } catch (error) {
+      console.error("Error submitting game results:", error);
+    }
+  };
+
+  const nextRound = async () => {
     if (currentRound < randomizedPairs.length - 1) {
       setCurrentRound((prev) => prev + 1);
       setHasVoted(false);
       setGameState("playing");
     } else {
+      // Submit results before showing final screen
+      await submitGameResults();
       setGameState("final");
     }
   };
@@ -349,7 +397,7 @@ export default function Home() {
         max: minScore + (i + 1) * binSize,
       }));
 
-    // Fill bins
+    // Fill bins with existing scores
     allScores.forEach((s) => {
       const binIndex = Math.min(
         Math.floor((s - minScore) / binSize),
@@ -358,11 +406,12 @@ export default function Home() {
       bins[binIndex]++;
     });
 
-    // Find which bin the user's score falls into
+    // Find which bin the user's score falls into and add it
     const userBinIndex = Math.min(
       Math.floor((score - minScore) / binSize),
       binCount - 1
     );
+    bins[userBinIndex]++;
 
     const maxBinCount = Math.max(...bins);
 
