@@ -6,12 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "add-image": "tsx scripts/add-image-pair.ts"
   },
   "dependencies": {
+    "@google/genai": "^1.31.0",
     "@supabase/ssr": "^0.8.0",
     "@tanstack/react-query": "^5.90.11",
+    "dotenv": "^16.4.7",
     "next": "^16.0.7",
+    "node-fetch": "^2.7.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "supabase": "^2.65.2",
@@ -20,11 +24,13 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/node-fetch": "^2.6.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.6",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
