@@ -22,6 +22,7 @@ export default function Home() {
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]);
   const [hasVoted, setHasVoted] = useState(false);
   const [selectedReal, setSelectedReal] = useState(false);
+  const [votedForLeft, setVotedForLeft] = useState(false);
 
   // Randomize image positions for each round
   const randomizedPairs = useMemo(() => {
@@ -48,14 +49,15 @@ export default function Home() {
     setHasVoted(false);
   };
 
-  const handleVote = (votedForLeft: boolean) => {
+  const handleVote = (clickedLeft: boolean) => {
     if (!currentPair || hasVoted || !game) return;
 
     const votedForReal =
-      (votedForLeft && currentPair.isRealLeft) ||
-      (!votedForLeft && !currentPair.isRealLeft);
+      (clickedLeft && currentPair.isRealLeft) ||
+      (!clickedLeft && !currentPair.isRealLeft);
 
     setSelectedReal(votedForReal);
+    setVotedForLeft(clickedLeft);
     setHasVoted(true);
 
     // Calculate points based on difficulty (how many people voted correctly)
@@ -119,6 +121,7 @@ export default function Home() {
     if (currentRound < randomizedPairs.length - 1) {
       setCurrentRound((prev) => prev + 1);
       setHasVoted(false);
+      setVotedForLeft(false);
       setGameState("playing");
     } else {
       // Submit results before showing final screen
@@ -129,7 +132,7 @@ export default function Home() {
 
   const shareOnX = () => {
     const url = window.location.href;
-    const text = `I scored ${score} points in today's ImageGuessr! Can you beat my score? Play now at ${url}`;
+    const text = `🍌 I scored ${score} points in today's Truth or Banana! Can you beat my score? Play now at ${url}`;
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       text
     )}`;
@@ -138,11 +141,11 @@ export default function Home() {
 
   const copyToClipboard = async () => {
     const url = window.location.href;
-    const text = `I scored ${score} points in today's ImageGuessr! Can you beat my score? Play now at ${url}`;
+    const text = `🍌 I scored ${score} points in today's Truth or Banana! Can you beat my score? Play now at ${url}`;
 
     try {
       await navigator.clipboard.writeText(text);
-      alert("Score copied to clipboard!");
+      alert("Score copied to clipboard! 🍌");
     } catch (err) {
       console.error("Failed to copy:", err);
     }
@@ -150,10 +153,10 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 dark:from-yellow-950 dark:via-amber-950 dark:to-yellow-900">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-zinc-900 border-r-transparent dark:border-zinc-50 dark:border-r-transparent"></div>
-          <p className="mt-4 text-zinc-600 dark:text-zinc-400">
+          <div className="mb-4 text-6xl animate-bounce">🍌</div>
+          <p className="mt-4 text-yellow-800 dark:text-yellow-200">
             Loading today's game...
           </p>
         </div>
@@ -163,8 +166,9 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 dark:from-yellow-950 dark:via-amber-950 dark:to-yellow-900">
         <div className="mx-auto max-w-md rounded-lg bg-red-50 p-6 text-center dark:bg-red-900/20">
+          <div className="mb-4 text-4xl">🍌❌</div>
           <p className="text-red-800 dark:text-red-400">
             Error:{" "}
             {error instanceof Error ? error.message : "Failed to load game"}
@@ -177,22 +181,31 @@ export default function Home() {
   // Landing Page
   if (gameState === "landing" && game) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <div className="text-center">
-          <h1 className="text-6xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            ImageGuessr
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 dark:from-yellow-950 dark:via-amber-950 dark:to-yellow-900">
+        {/* Banana pattern background */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 10c-3 0-5 2-6 5-1 4 0 8 3 10 2 2 5 2 7 0 3-2 4-6 3-10-1-3-3-5-7-5zm0 2c2 0 4 1 5 3 1 3 0 6-2 8-2 1-4 1-6 0-2-2-3-5-2-8 1-2 3-3 5-3z' fill='%23fbbf24' fill-opacity='1'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        <div className="text-center relative z-10">
+          <div className="mb-4 text-8xl">🍌</div>
+          <h1 className="text-6xl font-bold tracking-tight text-yellow-900 dark:text-yellow-100">
+            Truth or Banana
           </h1>
-          <p className="mt-4 text-xl text-zinc-600 dark:text-zinc-400">
-            Can you tell which image is real?
+          <p className="mt-4 text-xl text-yellow-800 dark:text-yellow-200">
+            Can you spot the real photo from the AI banana?
           </p>
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
+          <p className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
             {game.file_pairs.length} rounds • Game for {game.date}
           </p>
           <button
             onClick={startGame}
-            className="mt-8 rounded-lg bg-zinc-900 px-8 py-4 text-lg font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="mt-8 rounded-lg bg-yellow-500 px-8 py-4 text-lg font-bold text-yellow-950 transition-colors hover:bg-yellow-400 dark:bg-yellow-600 dark:text-yellow-50 dark:hover:bg-yellow-500"
           >
-            Start Daily Game
+            🍌 Start Daily Game
           </button>
         </div>
       </div>
@@ -202,7 +215,7 @@ export default function Home() {
   // Playing/Results State
   if ((gameState === "playing" || gameState === "results") && currentPair) {
     return (
-      <div className="min-h-screen bg-zinc-50 py-8 dark:bg-zinc-950">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 py-8 dark:from-yellow-950 dark:via-amber-950 dark:to-yellow-900">
         <div className="mx-auto max-w-5xl px-4">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
@@ -257,7 +270,11 @@ export default function Home() {
               <div
                 className={`relative aspect-square overflow-hidden rounded-lg ${
                   hasVoted
-                    ? currentPair.isRealLeft
+                    ? votedForLeft
+                      ? selectedReal
+                        ? "ring-8 ring-green-500"
+                        : "ring-8 ring-red-500"
+                      : currentPair.isRealLeft
                       ? "ring-4 ring-green-500"
                       : "ring-4 ring-red-500"
                     : "bg-zinc-100 dark:bg-zinc-800"
@@ -297,7 +314,11 @@ export default function Home() {
               <div
                 className={`relative aspect-square overflow-hidden rounded-lg ${
                   hasVoted
-                    ? !currentPair.isRealLeft
+                    ? !votedForLeft
+                      ? selectedReal
+                        ? "ring-8 ring-green-500"
+                        : "ring-8 ring-red-500"
+                      : !currentPair.isRealLeft
                       ? "ring-4 ring-green-500"
                       : "ring-4 ring-red-500"
                     : "bg-zinc-100 dark:bg-zinc-800"
@@ -416,20 +437,21 @@ export default function Home() {
     const maxBinCount = Math.max(...bins);
 
     return (
-      <div className="min-h-screen bg-zinc-50 py-12 dark:bg-zinc-950">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 py-12 dark:from-yellow-950 dark:via-amber-950 dark:to-yellow-900">
         <div className="mx-auto max-w-3xl px-4">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
-              Game Complete!
+            <div className="mb-4 text-6xl">🍌</div>
+            <h1 className="text-4xl font-bold text-yellow-900 dark:text-yellow-100">
+              Banana Score! 🎉
             </h1>
-            <div className="mt-8 rounded-lg bg-white p-8 shadow-sm dark:bg-zinc-900">
-              <p className="text-6xl font-bold text-zinc-900 dark:text-zinc-50">
+            <div className="mt-8 rounded-lg bg-yellow-100 p-8 shadow-lg dark:bg-yellow-900/50">
+              <p className="text-6xl font-bold text-yellow-900 dark:text-yellow-100">
                 {score}
               </p>
-              <p className="mt-2 text-xl text-zinc-600 dark:text-zinc-400">
-                Total Points
+              <p className="mt-2 text-xl text-yellow-800 dark:text-yellow-200">
+                Total Bananas 🍌
               </p>
-              <p className="mt-4 text-lg text-zinc-700 dark:text-zinc-300">
+              <p className="mt-4 text-lg text-yellow-700 dark:text-yellow-300">
                 {correctCount} / {roundResults.length} correct (
                 {accuracy.toFixed(0)}%)
               </p>
@@ -437,56 +459,55 @@ export default function Home() {
 
             {/* Comparison with Other Players */}
             {game.game_results.length > 0 && (
-              <div className="mt-8 rounded-lg bg-white p-6 shadow-sm dark:bg-zinc-900">
-                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+              <div className="mt-8 rounded-lg bg-yellow-100 p-6 shadow-lg dark:bg-yellow-900/50">
+                <h2 className="text-xl font-bold text-yellow-900 dark:text-yellow-100">
                   How You Compare
                 </h2>
-                <p className="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  Top {100 - percentile}%
+                <p className="mt-2 text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                  Top {100 - percentile}% 🍌
                 </p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-sm text-yellow-800 dark:text-yellow-300">
                   Better than {percentile}% of {allScores.length} players
                 </p>
 
                 {/* Histogram */}
                 <div className="mt-6">
-                  <p className="mb-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    Score Distribution
+                  <p className="mb-3 text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Banana Distribution 🍌
                   </p>
-                  <div className="flex items-end justify-between gap-1 h-32">
-                    {bins.map((count, index) => {
-                      const height =
-                        maxBinCount > 0 ? (count / maxBinCount) * 100 : 0;
-                      const isUserBin = index === userBinIndex;
-                      return (
-                        <div
-                          key={index}
-                          className="flex flex-1 flex-col items-center"
-                        >
-                          <div className="relative w-full">
+                  <div className="relative h-48">
+                    <div className="flex h-full items-end justify-between gap-2">
+                      {bins.map((count, index) => {
+                        const heightPercent =
+                          maxBinCount > 0 ? (count / maxBinCount) * 100 : 0;
+                        const isUserBin = index === userBinIndex;
+                        return (
+                          <div
+                            key={index}
+                            className="relative flex flex-1 items-end justify-center"
+                          >
+                            {isUserBin && count > 0 && (
+                              <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-bold text-yellow-700 dark:text-yellow-300">
+                                🍌
+                              </div>
+                            )}
                             <div
                               className={`w-full rounded-t transition-all ${
                                 isUserBin
-                                  ? "bg-blue-600 dark:bg-blue-500"
-                                  : "bg-zinc-300 dark:bg-zinc-700"
+                                  ? "bg-yellow-500 dark:bg-yellow-600"
+                                  : "bg-yellow-300 dark:bg-yellow-700"
                               }`}
                               style={{
-                                height: `${height}%`,
-                                minHeight: count > 0 ? "4px" : "0px",
+                                height: `${heightPercent}%`,
+                                minHeight: count > 0 ? "12px" : "0px",
                               }}
-                            >
-                              {isUserBin && (
-                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-bold text-blue-600 dark:text-blue-400">
-                                  You
-                                </div>
-                              )}
-                            </div>
+                            />
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="mt-2 flex justify-between text-xs text-zinc-500 dark:text-zinc-500">
+                  <div className="mt-2 flex justify-between text-xs text-yellow-700 dark:text-yellow-400">
                     <span>{minScore}</span>
                     <span>{maxScore}</span>
                   </div>
@@ -499,19 +520,19 @@ export default function Home() {
               {roundResults.map((result, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between rounded-lg bg-white p-4 dark:bg-zinc-900"
+                  className="flex items-center justify-between rounded-lg bg-yellow-100 p-4 dark:bg-yellow-900/50"
                 >
-                  <span className="text-zinc-700 dark:text-zinc-300">
+                  <span className="text-yellow-800 dark:text-yellow-200">
                     Round {index + 1}
                   </span>
                   <span
                     className={`font-medium ${
                       result.correct
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400"
+                        ? "text-green-700 dark:text-green-400"
+                        : "text-red-700 dark:text-red-400"
                     }`}
                   >
-                    {result.correct ? `+${result.points}` : "0"} pts
+                    {result.correct ? `+${result.points} 🍌` : "0"}
                   </span>
                 </div>
               ))}
@@ -521,13 +542,13 @@ export default function Home() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button
                 onClick={copyToClipboard}
-                className="flex-1 rounded-lg bg-blue-600 px-6 py-4 font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                className="flex-1 rounded-lg bg-yellow-500 px-6 py-4 font-bold text-yellow-950 transition-colors hover:bg-yellow-400 dark:bg-yellow-600 dark:text-yellow-50 dark:hover:bg-yellow-500"
               >
-                Challenge a Friend
+                🍌 Challenge a Friend
               </button>
               <button
                 onClick={shareOnX}
-                className="flex-1 rounded-lg bg-blue-600 px-6 py-4 font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                className="flex-1 rounded-lg bg-yellow-500 px-6 py-4 font-bold text-yellow-950 transition-colors hover:bg-yellow-400 dark:bg-yellow-600 dark:text-yellow-50 dark:hover:bg-yellow-500"
               >
                 Share on X
               </button>
@@ -541,9 +562,9 @@ export default function Home() {
                 setRoundResults([]);
                 setHasVoted(false);
               }}
-              className="mt-4 w-full rounded-lg bg-zinc-900 px-8 py-4 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="mt-4 w-full rounded-lg bg-yellow-600 px-8 py-4 font-bold text-yellow-50 transition-colors hover:bg-yellow-500 dark:bg-yellow-700 dark:text-yellow-100 dark:hover:bg-yellow-600"
             >
-              Play Again
+              🍌 Play Again
             </button>
           </div>
         </div>
