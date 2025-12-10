@@ -15,7 +15,7 @@ interface RoundResult {
 }
 
 export default function Home() {
-  const { data: game, isLoading, error } = useGame();
+  const { data: game, isLoading, error, refetch } = useGame();
   const [gameState, setGameState] = useState<GameState>("landing");
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
@@ -196,7 +196,7 @@ export default function Home() {
             Truth or Banana
           </h1>
           <p className="mt-4 text-xl text-yellow-800 dark:text-yellow-200">
-            Can you spot the real photo from the AI banana?
+            Can you spot the real photo?
           </p>
           <p className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
             {game.file_pairs.length} rounds • Game for {game.date}
@@ -229,39 +229,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Question / Result Header */}
-          {!hasVoted ? (
-            <p className="mb-6 text-center text-lg font-medium text-zinc-900 dark:text-zinc-50">
-              Which image is real?
-            </p>
-          ) : (
-            <div className="mb-6">
-              <div
-                className={`rounded-lg p-6 text-center ${
-                  selectedReal
-                    ? "bg-green-50 dark:bg-green-900/20"
-                    : "bg-red-50 dark:bg-red-900/20"
-                }`}
-              >
-                <p
-                  className={`text-2xl font-bold ${
-                    selectedReal
-                      ? "text-green-800 dark:text-green-400"
-                      : "text-red-800 dark:text-red-400"
-                  }`}
-                >
-                  {selectedReal ? "Correct!" : "Incorrect"}
-                </p>
-                <p className="mt-2 text-lg text-zinc-700 dark:text-zinc-300">
-                  {selectedReal
-                    ? `+${
-                        roundResults[roundResults.length - 1]?.points || 0
-                      } points`
-                    : "0 points"}
-                </p>
-              </div>
-            </div>
-          )}
+          {/* Question Header */}
+          <p className="mb-6 text-center text-lg font-medium text-zinc-900 dark:text-zinc-50">
+            Which image is real?
+          </p>
 
           {/* Images */}
           <div className="grid gap-6 md:grid-cols-2">
@@ -271,9 +242,9 @@ export default function Home() {
                 className={`relative aspect-square overflow-hidden rounded-lg ${
                   hasVoted
                     ? votedForLeft
-                      ? selectedReal
-                        ? "ring-8 ring-green-500"
-                        : "ring-8 ring-red-500"
+                      ? currentPair.isRealLeft
+                        ? "ring-4 ring-green-500"
+                        : "ring-4 ring-red-500"
                       : currentPair.isRealLeft
                       ? "ring-4 ring-green-500"
                       : "ring-4 ring-red-500"
@@ -296,11 +267,29 @@ export default function Home() {
                   This is real
                 </button>
               ) : (
-                <div className="rounded-lg bg-zinc-100 p-4 dark:bg-zinc-800">
-                  <p className="text-center font-medium text-zinc-900 dark:text-zinc-50">
+                <div
+                  className={`rounded-lg p-4 ${
+                    currentPair.isRealLeft
+                      ? "bg-green-100 dark:bg-green-900/30"
+                      : "bg-red-100 dark:bg-red-900/30"
+                  }`}
+                >
+                  <p
+                    className={`text-center font-medium ${
+                      currentPair.isRealLeft
+                        ? "text-green-900 dark:text-green-100"
+                        : "text-red-900 dark:text-red-100"
+                    }`}
+                  >
                     {currentPair.isRealLeft ? "Real Photo" : "AI-Generated"}
                   </p>
-                  <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
+                  <p
+                    className={`mt-2 text-center text-sm ${
+                      currentPair.isRealLeft
+                        ? "text-green-700 dark:text-green-300"
+                        : "text-red-700 dark:text-red-300"
+                    }`}
+                  >
                     {currentPair.isRealLeft
                       ? `${currentPair.real_vote_count} votes`
                       : `${currentPair.generated_vote_count} votes`}
@@ -315,9 +304,9 @@ export default function Home() {
                 className={`relative aspect-square overflow-hidden rounded-lg ${
                   hasVoted
                     ? !votedForLeft
-                      ? selectedReal
-                        ? "ring-8 ring-green-500"
-                        : "ring-8 ring-red-500"
+                      ? !currentPair.isRealLeft
+                        ? "ring-4 ring-green-500"
+                        : "ring-4 ring-red-500"
                       : !currentPair.isRealLeft
                       ? "ring-4 ring-green-500"
                       : "ring-4 ring-red-500"
@@ -340,11 +329,29 @@ export default function Home() {
                   This is real
                 </button>
               ) : (
-                <div className="rounded-lg bg-zinc-100 p-4 dark:bg-zinc-800">
-                  <p className="text-center font-medium text-zinc-900 dark:text-zinc-50">
+                <div
+                  className={`rounded-lg p-4 ${
+                    !currentPair.isRealLeft
+                      ? "bg-green-100 dark:bg-green-900/30"
+                      : "bg-red-100 dark:bg-red-900/30"
+                  }`}
+                >
+                  <p
+                    className={`text-center font-medium ${
+                      !currentPair.isRealLeft
+                        ? "text-green-900 dark:text-green-100"
+                        : "text-red-900 dark:text-red-100"
+                    }`}
+                  >
                     {!currentPair.isRealLeft ? "Real Photo" : "AI-Generated"}
                   </p>
-                  <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
+                  <p
+                    className={`mt-2 text-center text-sm ${
+                      !currentPair.isRealLeft
+                        ? "text-green-700 dark:text-green-300"
+                        : "text-red-700 dark:text-red-300"
+                    }`}
+                  >
                     {!currentPair.isRealLeft
                       ? `${currentPair.real_vote_count} votes`
                       : `${currentPair.generated_vote_count} votes`}
@@ -353,6 +360,79 @@ export default function Home() {
               )}
             </div>
           </div>
+
+          {/* Result Message - Only show after voting */}
+          {hasVoted && (
+            <div className="my-8">
+              <div
+                className={`rounded-lg p-6 text-center relative overflow-hidden ${
+                  selectedReal
+                    ? "bg-green-200 dark:bg-green-900/50"
+                    : "bg-red-200 dark:bg-red-900/50"
+                }`}
+              >
+                {/* Animated banana emoji */}
+                <div className="text-6xl mb-2 animate-[bounce_1s_ease-in-out_3]">
+                  <span className="inline-block animate-[scale-in_0.5s_ease-out]">
+                    {selectedReal ? "🍌" : "🍌💔"}
+                  </span>
+                </div>
+
+                <p
+                  className={`text-2xl font-bold ${
+                    selectedReal
+                      ? "text-green-800 dark:text-green-400"
+                      : "text-red-800 dark:text-red-400"
+                  }`}
+                >
+                  {selectedReal
+                    ? "Correct! You are wiser than the banana!"
+                    : "Oops, you slipped into the banana's trap!"}
+                </p>
+                <p className="mt-2 text-lg text-zinc-700 dark:text-zinc-500">
+                  {selectedReal
+                    ? `+${
+                        roundResults[roundResults.length - 1]?.points || 0
+                      } banana points 🍌`
+                    : "0 banana points"}
+                </p>
+
+                {/* Floating bananas animation */}
+                {selectedReal && (
+                  <>
+                    <div className="absolute text-4xl animate-float-up-left">
+                      🍌
+                    </div>
+                    <div
+                      className="absolute text-4xl animate-float-up-right"
+                      style={{ animationDelay: "0.2s" }}
+                    >
+                      🍌
+                    </div>
+                    <div
+                      className="absolute text-3xl animate-float-up-center"
+                      style={{ animationDelay: "0.4s" }}
+                    >
+                      🍌
+                    </div>
+                  </>
+                )}
+                {!selectedReal && (
+                  <>
+                    <div className="absolute text-4xl animate-float-down-left">
+                      🍌💨
+                    </div>
+                    <div
+                      className="absolute text-4xl animate-float-down-right"
+                      style={{ animationDelay: "0.2s" }}
+                    >
+                      🍌🚮
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Next Round Button */}
           {hasVoted && (
@@ -478,7 +558,7 @@ export default function Home() {
                   <div className="relative h-48">
                     <div className="flex h-full items-end justify-between gap-2">
                       {bins.map((count, index) => {
-                        const heightPercent =
+                        const height =
                           maxBinCount > 0 ? (count / maxBinCount) * 100 : 0;
                         const isUserBin = index === userBinIndex;
                         return (
@@ -498,7 +578,7 @@ export default function Home() {
                                   : "bg-yellow-300 dark:bg-yellow-700"
                               }`}
                               style={{
-                                height: `${heightPercent}%`,
+                                height: `${height}px`,
                                 minHeight: count > 0 ? "12px" : "0px",
                               }}
                             />
@@ -555,12 +635,14 @@ export default function Home() {
             </div>
 
             <button
-              onClick={() => {
+              onClick={async () => {
                 setGameState("landing");
                 setCurrentRound(0);
                 setScore(0);
                 setRoundResults([]);
                 setHasVoted(false);
+                // Refetch game data to get updated results
+                await refetch();
               }}
               className="mt-4 w-full rounded-lg bg-yellow-600 px-8 py-4 font-bold text-yellow-50 transition-colors hover:bg-yellow-500 dark:bg-yellow-700 dark:text-yellow-100 dark:hover:bg-yellow-600"
             >

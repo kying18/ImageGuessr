@@ -24,3 +24,104 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Banana celebration animations */
+@keyframes scale-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes float-up-left {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-100px, -150px) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+@keyframes float-up-right {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(100px, -150px) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+@keyframes float-up-center {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, -180px) rotate(360deg) scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes float-down-left {
+  0% {
+    transform: translate(0, -50px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-80px, 150px) rotate(-180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes float-down-right {
+  0% {
+    transform: translate(0, -50px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(80px, 150px) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-up-left {
+  animation: float-up-left 1.5s ease-out forwards;
+  left: 20%;
+  top: 50%;
+}
+
+.animate-float-up-right {
+  animation: float-up-right 1.5s ease-out forwards;
+  right: 20%;
+  top: 50%;
+}
+
+.animate-float-up-center {
+  animation: float-up-center 1.5s ease-out forwards;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%);
+}
+
+.animate-float-down-left {
+  animation: float-down-left 1.5s ease-out forwards;
+  left: 30%;
+  top: 20%;
+}
+
+.animate-float-down-right {
+  animation: float-down-right 1.5s ease-out forwards;
+  right: 30%;
+  top: 20%;
+}
