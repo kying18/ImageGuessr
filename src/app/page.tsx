@@ -7,6 +7,32 @@ import type { IFilePairWithFiles } from "@/lib/types";
 
 type GameState = "landing" | "playing" | "results" | "final";
 
+// Utility function to get optimized image URL with size parameters
+function getOptimizedImageUrl(
+  url: string,
+  width: number = 500,
+  quality: number = 75
+): string {
+  try {
+    const urlObj = new URL(url);
+
+    // Unsplash images - add size parameters
+    if (urlObj.hostname === "images.unsplash.com") {
+      urlObj.searchParams.set("w", width.toString());
+      urlObj.searchParams.set("q", quality.toString());
+      urlObj.searchParams.set("auto", "format");
+      urlObj.searchParams.set("fit", "crop");
+      return urlObj.toString();
+    }
+
+    // Vercel Blob Storage images auto-optimize via Next.js
+    return url;
+  } catch (e) {
+    // If URL parsing fails, return original
+    return url;
+  }
+}
+
 interface RoundResult {
   correct: boolean;
   points: number;
@@ -252,9 +278,10 @@ export default function Home() {
                 }`}
               >
                 <Image
-                  src={currentPair.leftImage.url}
+                  src={getOptimizedImageUrl(currentPair.leftImage.url, 500, 75)}
                   alt="Image A"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                   priority={currentRound === 0}
                 />
@@ -314,9 +341,14 @@ export default function Home() {
                 }`}
               >
                 <Image
-                  src={currentPair.rightImage.url}
+                  src={getOptimizedImageUrl(
+                    currentPair.rightImage.url,
+                    500,
+                    75
+                  )}
                   alt="Image B"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                   priority={currentRound === 0}
                 />
@@ -387,7 +419,7 @@ export default function Home() {
                 >
                   {selectedReal
                     ? "Correct! You are wiser than the banana!"
-                    : "Oops, you slipped into the banana's trap!"}
+                    : "The banana tricked you!"}
                 </p>
                 <p className="mt-2 text-lg text-zinc-700 dark:text-zinc-500">
                   {selectedReal
@@ -452,14 +484,14 @@ export default function Home() {
           {nextPair && (
             <div className="hidden">
               <Image
-                src={nextPair.leftImage.url}
+                src={getOptimizedImageUrl(nextPair.leftImage.url, 500, 75)}
                 alt="Preload"
                 width={500}
                 height={500}
                 priority
               />
               <Image
-                src={nextPair.rightImage.url}
+                src={getOptimizedImageUrl(nextPair.rightImage.url, 500, 75)}
                 alt="Preload"
                 width={500}
                 height={500}
