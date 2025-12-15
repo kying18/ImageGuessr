@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Real or Banana",
-  description: "Can you spot the real photo?",
+  description: "Can you spot the AI-generated image?",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
     title: "Real or Banana",
-    description: "Can you spot the real photo?",
+    description: "Can you spot the AI-generated image?",
     images: "/og-image.png",
   },
 };

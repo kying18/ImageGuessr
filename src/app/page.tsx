@@ -49,6 +49,8 @@ export default function Home() {
   const [hasVoted, setHasVoted] = useState(false);
   const [selectedReal, setSelectedReal] = useState(false);
   const [votedForLeft, setVotedForLeft] = useState(false);
+  const [votedForRealInCurrentRound, setVotedForRealInCurrentRound] =
+    useState(false);
 
   // Randomize image positions for each round
   const randomizedPairs = useMemo(() => {
@@ -78,13 +80,20 @@ export default function Home() {
   const handleVote = (clickedLeft: boolean) => {
     if (!currentPair || hasVoted || !game) return;
 
+    // Determine if user voted for the real image (for statistics tracking)
     const votedForReal =
       (clickedLeft && currentPair.isRealLeft) ||
       (!clickedLeft && !currentPair.isRealLeft);
 
-    setSelectedReal(votedForReal);
+    // User is voting for which image is GENERATED, so they're correct if they clicked the generated one
+    const votedForGenerated =
+      (clickedLeft && !currentPair.isRealLeft) ||
+      (!clickedLeft && currentPair.isRealLeft);
+
+    setSelectedReal(votedForGenerated);
     setVotedForLeft(clickedLeft);
     setHasVoted(true);
+    setVotedForRealInCurrentRound(votedForReal);
 
     // Calculate points based on difficulty (how many people voted correctly)
     const totalVotes =
@@ -92,13 +101,13 @@ export default function Home() {
     const realVotePercentage =
       totalVotes > 0 ? currentPair.real_vote_count / totalVotes : 0.5;
     const difficulty = Math.abs(0.5 - realVotePercentage); // 0 = 50/50, 0.5 = 100/0
-    const points = votedForReal ? Math.round(100 + difficulty * 200) : 0;
+    const points = votedForGenerated ? Math.round(100 + difficulty * 200) : 0;
 
     setScore((prev) => prev + points);
     setRoundResults((prev) => [
       ...prev,
       {
-        correct: votedForReal,
+        correct: votedForGenerated,
         points,
         file_pair_id: game.file_pairs[currentRound].id,
         voted_for_real: votedForReal,
@@ -148,6 +157,7 @@ export default function Home() {
       setCurrentRound((prev) => prev + 1);
       setHasVoted(false);
       setVotedForLeft(false);
+      setVotedForRealInCurrentRound(false);
       setGameState("playing");
     } else {
       // Submit results before showing final screen
@@ -222,7 +232,7 @@ export default function Home() {
             Truth or Banana
           </h1>
           <p className="mt-4 text-xl text-yellow-800 dark:text-yellow-200">
-            Can you spot the real photo?
+            Can you spot the AI-generated image?
           </p>
           <p className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
             {game.file_pairs.length} rounds • Game for {game.date}
@@ -257,7 +267,7 @@ export default function Home() {
 
           {/* Question Header */}
           <p className="mb-6 text-center text-lg font-medium text-zinc-900 dark:text-zinc-50">
-            Which image is real?
+            Which one is generated?
           </p>
 
           {/* Images */}
@@ -269,16 +279,20 @@ export default function Home() {
                   hasVoted
                     ? votedForLeft
                       ? currentPair.isRealLeft
-                        ? "ring-4 ring-green-500"
-                        : "ring-4 ring-red-500"
+                        ? "ring-4 ring-red-500"
+                        : "ring-4 ring-green-500"
                       : currentPair.isRealLeft
-                      ? "ring-4 ring-green-500"
-                      : "ring-4 ring-red-500"
+                      ? "ring-4 ring-red-500"
+                      : "ring-4 ring-green-500"
                     : "bg-zinc-100 dark:bg-zinc-800"
                 }`}
               >
                 <Image
-                  src={getOptimizedImageUrl(currentPair.leftImage.url, 500, 75)}
+                  src={getOptimizedImageUrl(
+                    currentPair.leftImage.url,
+                    1600,
+                    90
+                  )}
                   alt="Image A"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -291,21 +305,21 @@ export default function Home() {
                   onClick={() => handleVote(true)}
                   className="w-full rounded-lg bg-zinc-900 px-4 py-3 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
                 >
-                  This is real
+                  This is generated
                 </button>
               ) : (
                 <div
                   className={`rounded-lg p-4 ${
                     currentPair.isRealLeft
-                      ? "bg-green-100 dark:bg-green-900/30"
-                      : "bg-red-100 dark:bg-red-900/30"
+                      ? "bg-red-100 dark:bg-red-900/30"
+                      : "bg-green-100 dark:bg-green-900/30"
                   }`}
                 >
                   <p
                     className={`text-center font-medium ${
                       currentPair.isRealLeft
-                        ? "text-green-900 dark:text-green-100"
-                        : "text-red-900 dark:text-red-100"
+                        ? "text-red-900 dark:text-red-100"
+                        : "text-green-900 dark:text-green-100"
                     }`}
                   >
                     {currentPair.isRealLeft ? "Real Photo" : "AI-Generated"}
@@ -313,13 +327,19 @@ export default function Home() {
                   <p
                     className={`mt-2 text-center text-sm ${
                       currentPair.isRealLeft
-                        ? "text-green-700 dark:text-green-300"
-                        : "text-red-700 dark:text-red-300"
+                        ? "text-red-700 dark:text-red-300"
+                        : "text-green-700 dark:text-green-300"
                     }`}
                   >
                     {currentPair.isRealLeft
-                      ? `${currentPair.real_vote_count} votes`
-                      : `${currentPair.generated_vote_count} votes`}
+                      ? `${
+                          currentPair.real_vote_count +
+                          (hasVoted && votedForRealInCurrentRound ? 1 : 0)
+                        } votes`
+                      : `${
+                          currentPair.generated_vote_count +
+                          (hasVoted && !votedForRealInCurrentRound ? 1 : 0)
+                        } votes`}
                   </p>
                 </div>
               )}
@@ -332,19 +352,19 @@ export default function Home() {
                   hasVoted
                     ? !votedForLeft
                       ? !currentPair.isRealLeft
-                        ? "ring-4 ring-green-500"
-                        : "ring-4 ring-red-500"
+                        ? "ring-4 ring-red-500"
+                        : "ring-4 ring-green-500"
                       : !currentPair.isRealLeft
-                      ? "ring-4 ring-green-500"
-                      : "ring-4 ring-red-500"
+                      ? "ring-4 ring-red-500"
+                      : "ring-4 ring-green-500"
                     : "bg-zinc-100 dark:bg-zinc-800"
                 }`}
               >
                 <Image
                   src={getOptimizedImageUrl(
                     currentPair.rightImage.url,
-                    500,
-                    75
+                    1600,
+                    90
                   )}
                   alt="Image B"
                   fill
@@ -358,21 +378,21 @@ export default function Home() {
                   onClick={() => handleVote(false)}
                   className="w-full rounded-lg bg-zinc-900 px-4 py-3 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
                 >
-                  This is real
+                  This is generated
                 </button>
               ) : (
                 <div
                   className={`rounded-lg p-4 ${
                     !currentPair.isRealLeft
-                      ? "bg-green-100 dark:bg-green-900/30"
-                      : "bg-red-100 dark:bg-red-900/30"
+                      ? "bg-red-100 dark:bg-red-900/30"
+                      : "bg-green-100 dark:bg-green-900/30"
                   }`}
                 >
                   <p
                     className={`text-center font-medium ${
                       !currentPair.isRealLeft
-                        ? "text-green-900 dark:text-green-100"
-                        : "text-red-900 dark:text-red-100"
+                        ? "text-red-900 dark:text-red-100"
+                        : "text-green-900 dark:text-green-100"
                     }`}
                   >
                     {!currentPair.isRealLeft ? "Real Photo" : "AI-Generated"}
@@ -380,13 +400,19 @@ export default function Home() {
                   <p
                     className={`mt-2 text-center text-sm ${
                       !currentPair.isRealLeft
-                        ? "text-green-700 dark:text-green-300"
-                        : "text-red-700 dark:text-red-300"
+                        ? "text-red-700 dark:text-red-300"
+                        : "text-green-700 dark:text-green-300"
                     }`}
                   >
                     {!currentPair.isRealLeft
-                      ? `${currentPair.real_vote_count} votes`
-                      : `${currentPair.generated_vote_count} votes`}
+                      ? `${
+                          currentPair.real_vote_count +
+                          (hasVoted && votedForRealInCurrentRound ? 1 : 0)
+                        } votes`
+                      : `${
+                          currentPair.generated_vote_count +
+                          (hasVoted && !votedForRealInCurrentRound ? 1 : 0)
+                        } votes`}
                   </p>
                 </div>
               )}
@@ -484,17 +510,17 @@ export default function Home() {
           {nextPair && (
             <div className="hidden">
               <Image
-                src={getOptimizedImageUrl(nextPair.leftImage.url, 500, 75)}
+                src={getOptimizedImageUrl(nextPair.leftImage.url, 1600, 90)}
                 alt="Preload"
-                width={500}
-                height={500}
+                width={400}
+                height={400}
                 priority
               />
               <Image
-                src={getOptimizedImageUrl(nextPair.rightImage.url, 500, 75)}
+                src={getOptimizedImageUrl(nextPair.rightImage.url, 1600, 90)}
                 alt="Preload"
-                width={500}
-                height={500}
+                width={400}
+                height={400}
                 priority
               />
             </div>
